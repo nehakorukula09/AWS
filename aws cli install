@@ -1,0 +1,62 @@
+Linux:
+https://docs.aws.amazon.com/cli/v1/userguide/install-linux.html
+
+ubuntu@ip-172-31-95-20:~$ curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 21.2M  100 21.2M    0     0  71.4M      0 --:--:-- --:--:-- --:--:-- 71.4M
+
+ubuntu@ip-172-31-95-20:~$ unzip awscli-bundle.zip
+Archive:  awscli-bundle.zip
+  inflating: awscli-bundle/install   
+  inflating: awscli-bundle/packages/virtualenv-16.7.8.tar.gz  
+  inflating: awscli-bundle/packages/jmespath-0.10.0.tar.gz  
+  inflating: awscli-bundle/packages/botocore-1.34.62.tar.gz  
+  inflating: awscli-bundle/packages/colorama-0.4.4.tar.gz  
+  inflating: awscli-bundle/packages/docutils-0.16.tar.gz  
+  inflating: awscli-bundle/packages/PyYAML-6.0.1.tar.gz  
+  inflating: awscli-bundle/packages/rsa-4.7.2.tar.gz  
+  inflating: awscli-bundle/packages/s3transfer-0.10.0.tar.gz  
+  inflating: awscli-bundle/packages/jmespath-1.0.1.tar.gz  
+  inflating: awscli-bundle/packages/pyasn1-0.5.1.tar.gz  
+  inflating: awscli-bundle/packages/python-dateutil-2.9.0.post0.tar.gz  
+  inflating: awscli-bundle/packages/urllib3-1.26.18.tar.gz  
+  inflating: awscli-bundle/packages/six-1.16.0.tar.gz  
+  inflating: awscli-bundle/packages/awscli-1.32.62.tar.gz  
+  inflating: awscli-bundle/packages/setup/setuptools_scm-3.3.3.tar.gz  
+  inflating: awscli-bundle/packages/setup/wheel-0.33.6.tar.gz  
+=======================
+The virtual environment was not created successfully because ensurepip is not
+available.  On Debian/Ubuntu systems, you need to install the python3-venv
+package using the following command.
+
+    apt install python3.10-venv
+sudo apt install python3.10-venv
+
+=======================
+ubuntu@ip-172-31-95-20:~$ sudo /usr/bin/python3 awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+Running cmd: /usr/bin/python3 -m venv /usr/local/aws
+Running cmd: /usr/local/aws/bin/python -m pip install --no-binary :all: --no-cache-dir --no-index --find-links file://. setuptools_scm-3.3.3.tar.gz
+Running cmd: /usr/local/aws/bin/python -m pip install --no-binary :all: --no-cache-dir --no-index --find-links file://. wheel-0.33.6.tar.gz
+Running cmd: /usr/local/aws/bin/python -m pip install --no-binary :all: --no-build-isolation --no-cache-dir --no-index  --find-links file:///home/ubuntu/awscli-bundle/packages awscli-1.32.62.tar.gz
+You can now run: /usr/local/bin/aws --version
+
+Note: AWS CLI version 2, the latest major version of the AWS CLI, is now stable and recommended for general use. For more information, see the AWS CLI version 2 installation instructions at: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
+
+=======================
+
+ubuntu@ip-172-31-95-20:~$ aws --version
+aws-cli/1.32.62 Python/3.10.12 Linux/6.2.0-1018-aws botocore/1.34.62
+
+ubuntu@ip-172-31-95-20:~$ aws configure
+AWS Access Key ID [None]: **********
+AWS Secret Access Key [None]: ***********
+Default region name [None]: **********
+Default output format [None]:
+
+========================
+
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export AWS_SESSION_TOKEN=""
+
