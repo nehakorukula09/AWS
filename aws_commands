@@ -1,0 +1,166 @@
+aws rds describe-db-instances |grep -w DBInstanceIdentifier
+aws rds describe-db-instances --db-instance-identifier nnk-database-instance-1
+===============
+ubuntu@ip-172-31-95-20:~$ aws rds describe-db-instances --query "DBInstances[?contains(DBInstanceIdentifier, 'nnk-database')].[DBInstanceIdentifier, Endpoint.Port, DBInstanceStatus]" --output table
+--------------------------------------------------
+|               DescribeDBInstances              |
++--------------------------+-------+-------------+
+|  nnk-database-instance-1 |  5432 |  available  |
+|  nnk-database-instance-2 |  5432 |  available  |
+|  nnk-database-instance-3 |  5432 |  available  |
++--------------------------+-------+-------------+
+===============
+Connect to Database:
+
+Primary :
+ubuntu@ip-172-31-95-20:~$ psql -h nnk-database.cluster-c5wumyjzkfnn.us-east-1.rds.amazonaws.com --port=5432 --username=postgres --password
+Password: 
+psql (14.11 (Ubuntu 14.11-0ubuntu0.22.04.1), server 14.8)
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+postgres=> select version();
+                                                 version                                                 
+---------------------------------------------------------------------------------------------------------
+ PostgreSQL 14.8 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 7.3.1 20180712 (Red Hat 7.3.1-12), 64-bit
+(1 row)
+
+postgres=> select pg_is_in_recovery();
+ pg_is_in_recovery 
+-------------------
+ f
+(1 row)
+
+Secondary:
+
+ubuntu@ip-172-31-95-20:~$ psql -h nnk-database-instance-2.c5wumyjzkfnn.us-east-1.rds.amazonaws.com --port=5432 --username=postgres --password
+Password: 
+psql (14.11 (Ubuntu 14.11-0ubuntu0.22.04.1), server 14.8)
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+postgres=> select version();
+                                                 version                                                 
+---------------------------------------------------------------------------------------------------------
+ PostgreSQL 14.8 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 7.3.1 20180712 (Red Hat 7.3.1-12), 64-bit
+(1 row)
+
+postgres=> select pg_is_in_recovery();
+ pg_is_in_recovery 
+-------------------
+ t
+(1 row)
+
+===========
+Using Endpoints:
+ubuntu@ip-172-31-95-20:~$ psql -h nnk-database.cluster-c5wumyjzkfnn.us-east-1.rds.amazonaws.com --port=5432 --username=postgres --password
+Password: 
+psql (14.11 (Ubuntu 14.11-0ubuntu0.22.04.1), server 14.8)
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+postgres=> select pg_is_in_recovery();
+ pg_is_in_recovery 
+-------------------
+ f
+(1 row)
+
+postgres=> \q
+ubuntu@ip-172-31-95-20:~$ psql -h nnk-database.cluster-ro-c5wumyjzkfnn.us-east-1.rds.amazonaws.com --port=5432 --username=postgres --password
+Password: 
+psql (14.11 (Ubuntu 14.11-0ubuntu0.22.04.1), server 14.8)
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+postgres=> select pg_is_in_recovery();
+ pg_is_in_recovery 
+-------------------
+ t
+(1 row)
+
+================
+Available versions for upgrade:
+
+ubuntu@ip-172-31-95-20:~$ aws rds describe-db-engine-versions   --engine postgres   --engine-version 14.8   --query "DBEngineVersions[*].ValidUpgradeTarget[*].{EngineVersion:EngineVersion}" --output text
+14.9
+14.10
+14.11
+15.3
+15.4
+15.5
+15.6
+
+ubuntu@ip-172-31-95-20:~$ aws rds describe-db-engine-versions   --engine postgres   --engine-version 14.8   --query "DBEngineVersions[*].ValidUpgradeTarget[*].{EngineVersion:EngineVersion}" --output table
+--------------------------
+|DescribeDBEngineVersions|
++------------------------+
+|      EngineVersion     |
++------------------------+
+|  14.9                  |
+|  14.10                 |
+|  14.11                 |
+|  15.3                  |
+|  15.4                  |
+|  15.5                  |
+|  15.6                  |
++------------------------+
+
+==========
+CPU Statistics:
+ubuntu@ip-172-31-95-20:~$ aws cloudwatch get-metric-statistics --namespace 'AWS/RDS' --metric-name 'CPUUtilization' \
+--start-time '2024-03-13T21:19:00Z' --end-time '2024-03-13T22:19:00Z' --period 300 \
+--statistics 'Maximum' --query 'sort_by(Datapoints,&Timestamp)[*]' --output table
+-----------------------------------------------------------
+|                   GetMetricStatistics                   |
++---------------------+------------------------+----------+
+|       Maximum       |       Timestamp        |  Unit    |
++---------------------+------------------------+----------+
+|  22.66515565628958  |  2024-03-13T21:19:00Z  |  Percent |
+|  21.224292523582548 |  2024-03-13T21:24:00Z  |  Percent |
+|  19.8               |  2024-03-13T21:29:00Z  |  Percent |
+|  19.775659188639622 |  2024-03-13T21:34:00Z  |  Percent |
+|  20.441325977900366 |  2024-03-13T21:39:00Z  |  Percent |
+|  20.03366722778713  |  2024-03-13T21:44:00Z  |  Percent |
+|  24.875829194306476 |  2024-03-13T21:49:00Z  |  Percent |
+|  19.475649188306274 |  2024-03-13T21:54:00Z  |  Percent |
+|  19.825             |  2024-03-13T21:59:00Z  |  Percent |
+|  19.14134764420593  |  2024-03-13T22:04:00Z  |  Percent |
+|  18.86603779874004  |  2024-03-13T22:09:00Z  |  Percent |
+|  20.116666666666664 |  2024-03-13T22:14:00Z  |  Percent |
++---------------------+------------------------+----------+
+======
+
+List all DB cluster parameter groups
+aws rds describe-db-cluster-parameter-groups
+
+ubuntu@ip-172-31-95-20:~$ aws rds describe-db-cluster-parameter-groups \
+    --db-cluster-parameter-group-name default.postgres14
+{
+    "DBClusterParameterGroups": [
+        {
+            "DBClusterParameterGroupName": "default.postgres14",
+            "DBParameterGroupFamily": "postgres14",
+            "Description": "Default cluster parameter group for postgres14",
+            "DBClusterParameterGroupArn": "arn:aws:rds:us-east-1:482433642182:cluster-pg:default.postgres14"
+        }
+    ]
+}
+
+========
+{
+    "Parameters": [
+        {
+            "ParameterName": "application_name",
+            "Description": "Sets the application name to be reported in statistics and logs.",
+            "Source": "engine-default",
+            "ApplyType": "dynamic",
+            "DataType": "string",
+            "IsModifiable": true,
+            "ApplyMethod": "pending-reboot",
+            "SupportedEngineModes": [
+                "provisioned"
+            ]
+        },
+
+ubuntu@ip-172-31-95-20:~$ aws rds describe-db-cluster-parameters --db-cluster-parameter-group-name default.postgres14 \
+--query 'Parameters[*].[ParameterName,ParameterValue,ApplyMethod,IsModifiable,AllowedValues'] --output table
